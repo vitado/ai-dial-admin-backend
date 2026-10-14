@@ -1,0 +1,39 @@
+name: SCA Radar
+
+# Pilot caller of vitado/sca-radar on the fork: manual runs only.
+# SBOM of the development branch of the upstream repo -> radar.json + step summary.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: sca-radar
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: epam/ai-dial-admin-backend
+          ref: development
+          persist-credentials: false
+      - uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.6
+        with:
+          version: v0.75.0
+          cache: true
+      - name: SBOM
+        run: >-
+          trivy fs --format cyclonedx
+          --output "$RUNNER_TEMP/source-development.cdx.json" .
+      - name: Radar
+        uses: vitado/sca-radar@86e39bfb2acc494a5649870a503d645dfb071601
+        with:
+          sboms: source-development=${{ runner.temp }}/source-development.cdx.json
+          output-dir: ${{ runner.temp }}/radar
