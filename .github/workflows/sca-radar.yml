@@ -1,7 +1,8 @@
 name: SCA Radar
 
 # Pilot caller of vitado/sca-radar on the fork: manual runs only.
-# SBOM of the development branch of the upstream repo -> radar.json + step summary.
+# Inventory = the Trivy parts (native JSON per target) of the latest successful
+# SCA Scan run of this fork, converted to CycloneDX; they expire after a day.
 
 on:
   workflow_dispatch:
@@ -12,28 +13,46 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   radar:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: epam/ai-dial-admin-backend
-          ref: development
-          persist-credentials: false
+      - name: Download Trivy parts of the latest SCA Scan run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          run_id=$(gh run list -R "$REPO" --workflow sca-scan.yml --status success -L 1 \
+            --json databaseId -q '.[0].databaseId')
+          if [ -z "$run_id" ]; then
+            echo "::error::no successful SCA Scan run"
+            exit 1
+          fi
+          echo "SCA Scan run: $run_id"
+          gh run download "$run_id" -R "$REPO" -p 'sca-part-trivy-*' -D "$RUNNER_TEMP/parts"
       - uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.6
         with:
           version: v0.75.0
           cache: true
-      - name: SBOM
-        run: >-
-          trivy fs --format cyclonedx
-          --output "$RUNNER_TEMP/source-development.cdx.json" .
+      - name: Convert to CycloneDX
+        id: sbom
+        run: |
+          mkdir -p "$RUNNER_TEMP/sbom"
+          {
+            echo 'list<<SBOMS'
+            for dir in "$RUNNER_TEMP"/parts/sca-part-trivy-*; do
+              target="${dir##*/sca-part-trivy-}"
+              trivy convert --quiet --format cyclonedx \
+                --output "$RUNNER_TEMP/sbom/$target.cdx.json" "$dir/trivy/$target.json"
+              echo "$target=$RUNNER_TEMP/sbom/$target.cdx.json"
+            done
+            echo 'SBOMS'
+          } >> "$GITHUB_OUTPUT"
       - name: Radar
-        uses: vitado/sca-radar@86e39bfb2acc494a5649870a503d645dfb071601
+        uses: vitado/sca-radar@1cdd3fc726afa4c7db551f56dc05de25edf46d70
         with:
-          sboms: source-development=${{ runner.temp }}/source-development.cdx.json
+          sboms: ${{ steps.sbom.outputs.list }}
           output-dir: ${{ runner.temp }}/radar
