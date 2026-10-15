@@ -52,7 +52,7 @@ jobs:
             echo 'SBOMS'
           } >> "$GITHUB_OUTPUT"
       - name: Radar
-        uses: vitado/sca-radar@1cdd3fc726afa4c7db551f56dc05de25edf46d70
+        uses: vitado/sca-radar@ce6c26a3868edeae8034e7a1718b25add83c4e2b # main
         with:
           sboms: ${{ steps.sbom.outputs.list }}
           output-dir: ${{ runner.temp }}/radar
