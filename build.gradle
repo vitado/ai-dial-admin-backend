@@ -81,7 +81,7 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-secretmanager:2.59.0'
     implementation 'com.google.cloud.sql:postgres-socket-factory:1.28.0'
     implementation 'com.google.guava:guava:33.4.8-jre'
-    implementation("org.jsoup:jsoup:1.23.1")
+    implementation("org.jsoup:jsoup:1.23.2")
     implementation 'io.modelcontextprotocol.sdk:mcp:0.11.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -183,10 +183,10 @@ dependencies {
         implementation('org.springframework:spring-webmvc:6.2.19') {
             because("previous versions have vulnerabilities")
         }
-        implementation ('com.fasterxml.jackson.core:jackson-databind:2.22.1') {
+        implementation ('com.fasterxml.jackson.core:jackson-databind:2.22.3') {
             because("previous versions have vulnerabilities")
         }
-        implementation ('com.fasterxml.jackson.core:jackson-core:2.22.1') {
+        implementation ('com.fasterxml.jackson.core:jackson-core:2.22.3') {
             because("previous versions have vulnerabilities")
         }
         implementation ('org.apache.tomcat.embed:tomcat-embed-core:11.0.25') {
@@ -216,7 +216,7 @@ dependencies {
         implementation("io.netty:netty-transport-native-epoll:4.2.17.Final") {
             because("previous versions have vulnerabilities")
         }
-        implementation("org.bouncycastle:bcprov-jdk18on:1.84") {
+        implementation("org.bouncycastle:bcprov-jdk18on:1.85") {
             because("previous versions have vulnerabilities")
         }
         testImplementation('org.apache.commons:commons-compress:1.27.1') {
