@@ -28,7 +28,7 @@ jobs:
       actions: read
       statuses: read
       packages: read
-    uses: vitado/ai-dial-ci/.github/workflows/sca_fix.yml@feat/sca-fix
+    uses: vitado/ai-dial-ci/.github/workflows/sca_fix.yml@sca-fix-smoke-k1
     with:
       report-run-ids: ${{ inputs.report-run-ids }}
       config: ${{ inputs.config }}
